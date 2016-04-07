@@ -1,0 +1,58 @@
+<project default="dist">
+
+  <available file="asm-5.0.3/lib/all/asm-all-5.0.3.jar" property="have_asmjar"/>
+
+  <mkdir dir="codespecs/bin"/>
+
+  <mkdir dir="codespecsweaver/bin"/>
+
+  <target name="asm" unless="have_asmjar">
+    <get src="http://download.forge.objectweb.org/asm/asm-5.0.3-bin.zip" dest="asm-5.0.3-bin.zip" usetimestamp="true" skipexisting="true"/>
+    <unzip src="asm-5.0.3-bin.zip" dest="." overwrite="false"/>
+  </target>
+
+  <target name="junit_jar">
+    <get src="http://repo1.maven.org/maven2/junit/junit/4.11/junit-4.11.jar" dest="junit-4.11.jar" usetimestamp="true" skipexisting="true"/>
+    <get src="http://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar" dest="hamcrest-core-1.3.jar" usetimestamp="true" skipexisting="true"/>
+  </target>
+
+  <target name="codespecs_jar">
+    <javac srcdir="codespecs/src" debug="true" destdir="codespecs/bin" includeAntRuntime="false" />
+    <jar destfile="codespecs.jar">
+      <fileset dir="codespecs/bin"/>
+    </jar>
+  </target>
+
+  <target name="weaver_jar" depends="asm">
+    <javac srcdir="codespecsweaver/src" debug="true" destdir="codespecsweaver/bin" classpath="asm-5.0.3/lib/all/asm-all-5.0.3.jar" includeAntRuntime="false" />
+    <jar destfile="codespecsweaver.jar">
+      <manifest>
+        <attribute name="Premain-Class" value="codespecsweaver.CodeSpecsWeaver"/>
+      </manifest>
+      <fileset dir="codespecsweaver/bin"/>
+      <zipfileset excludes="META-INF/*" src="asm-5.0.3/lib/all/asm-all-5.0.3.jar"/>
+    </jar>
+  </target>
+
+  <target name="test" depends="codespecs_jar,weaver_jar,junit_jar">
+    <javac srcdir="codespecstest/src" destdir="codespecstest/bin" classpath="codespecs.jar,junit-4.11.jar,hamcrest-core-1.3.jar" includeAntRuntime="false" />
+    <junit fork="yes" haltonfailure="yes">
+      <classpath>
+        <pathelement location="junit-4.11.jar"/>
+        <pathelement location="hamcrest-core-1.3.jar"/>
+        <pathelement location="codespecs.jar"/>
+        <pathelement location="codespecstest/bin"/>
+      </classpath>
+      <jvmarg value="-javaagent:codespecsweaver.jar"/>
+      <formatter type="plain" usefile="false"/>
+      <batchtest>
+        <fileset dir="codespecstest/src">
+          <include name="accounts/test/*Test*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <target name="dist" depends="codespecs_jar,weaver_jar,test"/>
+
+</project>
