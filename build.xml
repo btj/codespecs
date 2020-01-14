@@ -1,10 +1,9 @@
 <project default="dist">
 
-  <available file="asm-5.0.3/lib/all/asm-all-5.0.3.jar" property="have_asmjar"/>
+  <available file="asm-all-5.0.3.jar" property="have_asmjar"/>
 
   <target name="asm" unless="have_asmjar">
-    <get src="http://download.forge.objectweb.org/asm/asm-5.0.3-bin.zip" dest="asm-5.0.3-bin.zip" usetimestamp="true" skipexisting="true"/>
-    <unzip src="asm-5.0.3-bin.zip" dest="." overwrite="false"/>
+    <get src="https://repository.ow2.org/nexus/content/repositories/releases/org/ow2/asm/asm-all/5.0.3/asm-all-5.0.3.jar" dest="asm-all-5.0.3.jar" usetimestamp="true" skipexisting="true"/>
   </target>
 
   <target name="junit_jar">
@@ -24,13 +23,13 @@
   <mkdir dir="codespecsweaver/bin"/>
 
   <target name="weaver_jar" depends="asm">
-    <javac srcdir="codespecsweaver/src" debug="true" destdir="codespecsweaver/bin" classpath="asm-5.0.3/lib/all/asm-all-5.0.3.jar" includeAntRuntime="false" />
+    <javac srcdir="codespecsweaver/src" debug="true" destdir="codespecsweaver/bin" classpath="asm-all-5.0.3.jar" includeAntRuntime="false" />
     <jar destfile="codespecsweaver.jar">
       <manifest>
         <attribute name="Premain-Class" value="codespecsweaver.CodeSpecsWeaver"/>
       </manifest>
       <fileset dir="codespecsweaver/bin"/>
-      <zipfileset excludes="META-INF/*" src="asm-5.0.3/lib/all/asm-all-5.0.3.jar"/>
+      <zipfileset excludes="META-INF/*" src="asm-all-5.0.3.jar"/>
     </jar>
   </target>
 
